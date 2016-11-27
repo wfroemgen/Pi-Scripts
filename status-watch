@@ -1,1 +1,30 @@
-watch "uptime ; echo ; echo "=STATUS="; echo "-CPU-" ; vcgencmd measure_temp | cut -b 6- ; vcgencmd measure_volts | cut -b 6- ; vcgencmd measure_clock arm | cut -b 15- ; echo "-HDD-" ; sudo smartctl -A /dev/sda | grep Temperature_Cels | cut -b 88-90 ; echo ;  echo "=SPEICHER="; df -h / /dev/mapper/HDD ; echo ; du -sh /home/pi/LOG /media/HDD/Pi-Bak /media/HDD/Synology-Bak.hbk 2>/dev/null; echo ; echo "=VPN="; tail -n3 /home/pi/fritzboxvpn.log ; echo ; echo "=SSH=";  tail -n25 /home/pi/ssh.log"
+# Gibt grundlegende Infos über das System aus
+# ToDo: Variablen einführen für einfachere Anpassung und einstelbares Aktualisierungsintervall
+
+# Wiederholt alle 5 Sec
+watch -n5 "
+# Grundinfos
+uptime
+echo
+echo "=STATUS="
+echo "-CPU-"
+vcgencmd measure_temp | cut -b 6-
+vcgencmd measure_volts | cut -b 6-
+vcgencmd measure_clock arm | cut -b 15-		#ToDo: Durch 10000 teilen für Anzeige in MHz
+
+echo "-HDD-"
+
+# Platte startet dafür wieder :(
+sudo smartctl -A /dev/sda | grep Temperature_Cels | cut -b 88-90
+echo
+echo "=SPEICHER="
+df -h / /dev/mapper/HDD
+echo
+du -sh /home/pi/LOG /media/HDD/Pi-Bak /media/HDD/Synology-Bak.hbk 2>/dev/null
+echo
+echo "=VPN="
+tail /home/pi/fritzboxvpn.log
+echo
+echo "=SSH="
+tail -n25 /home/pi/ssh.log
+"
