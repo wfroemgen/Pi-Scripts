@@ -1,0 +1,1 @@
+date=`/bin/date -u +%Y-%m-%d_%H:%M_UTC`;sudo /bin/mv /home/pi/fritzboxvpn.log /home/pi/LOG/fritzboxvpn_${date}.log; sudo /bin/mv /home/pi/ssh.log /home/pi/LOG/ssh_${date}.log;/usr/bin/touch /home/pi/fritzboxvpn.log;/usr/bin/touch /home/pi/ssh.log;/usr/bin/xz -F lzma -9 /home/pi/LOG/fritzboxvpn_${date}.log;/usr/bin/xz -F lzma -9 /home/pi/LOG/ssh_${date}.log;

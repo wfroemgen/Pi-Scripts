@@ -1,0 +1,2 @@
+sudo bash -c 'size=$((512*$(</sys/class/block/mmcblk0/size))) host=`hostname` date=`date -u +%Y-%m-%d_%H:%M_UTC` ; dd if=/dev/mmcblk0 bs=1M | pv -petrab -s $size | gzip -9c | cat > /media/HDD/Pi-Bak/Backup_${date}.img.gz'
+#date=`/bin/date -u +%Y-%m-%d_%H:%M_UTC` ; /bin/dd if=/dev/mmcblk0 of=/media/HDD/Pi-Bak/Backup_${date}.img bs=1M ; /usr/bin/xz -M 80% -v -F lzma -1 /media/HDD/Pi-Bak/Backup_${date}.img

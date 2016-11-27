@@ -1,0 +1,73 @@
+#!/bin/bash
+
+# set -x auskommentieren für den Debug Modus. Die Ausgabe erscheint in der Kommandozeile.
+
+# set -x
+
+# hier wird die Logfile-Datei definiert
+# Logfile muss erst mit „sudo nano fritzbox.log“ am Zielort erstellt werden erstellt werden
+
+LOGFILE=/home/pi/fritzboxvpn.log
+
+# hier wird die IP-Adresse von Fritzbox definiert. wenn die VPN Verbindung steht, dann sollte ping funktionieren.
+
+myHost=10.15.105.1
+tunIP=10.15.105
+
+# Wert -> wie oft soll gepingt werden
+
+wert=3
+min=2
+
+count=$(ping -c $wert $myHost | grep 'received' | awk '{print $4 }')
+
+if [ $count -ge $min ]
+
+then
+
+# die kommenden echos sind die Info-Ausgaben in Logfile
+
+echo "$(date -u +%Y-%m-%d_%H:%M_UTC) IP $myHost erreichbar" | tee -a $LOGFILE
+
+else
+
+echo "" | tee -a $LOGFILE
+
+echo "$(date -u +%Y-%m-%d_%H:%M_UTC) IP $myHost ist nicht erreichbar" |tee -a $LOGFILE
+
+echo "$(date -u +%Y-%m-%d_%H:%M_UTC) VPN-Verbindung trennen" |tee -a $LOGFILE
+
+#hier wird das VPNC-Demon gestoppt, damit es nicht meher im Hintergrund lauft
+
+/usr/sbin/vpnc-disconnect
+
+# oft stimmt was mit dem Netzwerk nicht, deshalb werden alle Netzwerkverbindungen neugestartet.
+
+echo "$(date -u +%Y-%m-%d_%H:%M_UTC) Netzwerkverbindungen neu starten" | tee -a $LOGFILE
+
+/etc/init.d/networking restart
+
+# x Sekunden warten
+
+sleep 20
+
+echo "$(date -u +%Y-%m-%d_%H:%M_UTC) VPN Verbindung neu aufbauen" | tee -a $LOGFILE
+
+# starten von VPNC-Demon. PID und VPN-IP Adresse auslesen
+
+sudo vpnc fritzbox.conf 2>1  >>$LOGFILE
+
+# Fixt die default route wieder ohne VPN
+sudo route del default dev tun0
+sudo route add default eth0
+
+pid=$(pidof vpnc)
+
+ipvpn=$(/sbin/ifconfig tun0 | grep $tunIP | cut -b 21-34)
+
+echo "$(date -u +%Y-%m-%d_%H:%M_UTC) VPN wurde aufgebaut, IP $ipvpn mit id: $(pidof vpnc)" | tee -a $LOGFILE
+
+echo "" | tee -a $LOGFILE
+
+fi
+
